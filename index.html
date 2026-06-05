@@ -1,40 +1,24 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Flashcards N3</title>
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <title>Flashcards N3</title>
-</head>
+  <body>
+    <h2>📚 Flashcards N3</h2>
 
-<body>
-  <div class="layout">
-    <div class="main">
-      <h2>📚 Flashcards N3</h2>
+    <div class="card" id="question">Loading...</div>
 
-      <div class="card" id="question">Loading...</div>
-      <div id="answer"></div>
+    <div id="answer"></div>
 
-      <div class="buttons">
-        <button class="show" id="showBtn">Show</button>
-        <button class="next" id="nextBtn">Next</button>
-        <button class="skip" id="skipBtn">Skip</button>
-        <button class="restart" id="restartBtn">Restart</button>
-      </div>
+    <div class="buttons">
+      <button class="show" id="showBtn">Show</button>
+      <button class="next" id="nextBtn">Next</button>
+      <button class="skip" id="skipBtn">Skip</button>
+      <button class="restart" id="restartBtn">Restart</button>
     </div>
 
-    <!-- 📊 SIDEBAR -->
-    <div class="side">
-      <div class="stat">
-        <h3>📊 Progress</h3>
-        <p>Done: <span id="doneCount">0</span></p>
-        <p>Left: <span id="leftCount">0</span></p>
-      </div>
-
-      <div id="doneList"></div>
-    </div>
-  </div>
-
-  <script type="module" src="/src/main.ts"></script>
-</body>
-
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>

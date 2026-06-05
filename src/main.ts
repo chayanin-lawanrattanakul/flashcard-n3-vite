@@ -23,10 +23,22 @@ if ("serviceWorker" in navigator) {
   );
 }
 
+function updateUI() {
+  document.getElementById("doneCount")!.textContent = String(done.length);
+  document.getElementById("leftCount")!.textContent = String(deck.length);
+
+  const list = document.getElementById("doneList")!;
+  list.innerHTML = done
+    .slice(-20)
+    .map(c => `<div class="done-item">✔ ${c.kanji}</div>`)
+    .join("");
+}
+
 function pick() {
   if (deck.length === 0) {
     question.textContent = "🎉 Done!";
     answer.innerHTML = "";
+    updateUI();
     return;
   }
 
@@ -34,12 +46,32 @@ function pick() {
 
   question.textContent = current.kanji;
   answer.innerHTML = "";
+
+  updateUI(); 
+}
+
+let done: Card[] = [];
+
+function saveProgress() {
+  localStorage.setItem("deck", JSON.stringify(deck));
+  localStorage.setItem("done", JSON.stringify(done));
+}
+
+function loadProgress() {
+  const savedDeck = localStorage.getItem("deck");
+  const savedDone = localStorage.getItem("done");
+
+  if (savedDeck) deck = JSON.parse(savedDeck);
+  if (savedDone) done = JSON.parse(savedDone);
 }
 
 async function load() {
   try {
     const res = await fetch(`${import.meta.env.BASE_URL}vocab.json`);
     deck = await res.json();
+
+    loadProgress(); 
+
     pick();
   } catch (e) {
     console.error("โหลด vocab.json ไม่ได้", e);
@@ -79,11 +111,17 @@ function showAnswer() {
   `;
 }
 
+
 function nextCard() {
   if (!current) return;
+  const card = current;
 
-  deck = deck.filter(c => c.id !== current!.id);
+  done.push(current);
+  deck = deck.filter(c => c.id !== card.id);
+
+  saveProgress();
   pick();
+  updateUI();
 }
 
 function skipCard() {

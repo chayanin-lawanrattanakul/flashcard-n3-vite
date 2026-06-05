@@ -3,6 +3,7 @@ import "./style.css";
 type Card = {
   id: number;
   kanji: string;
+  reading: string;
   en: string;
   th: string;
   example_kanji: string;
@@ -11,22 +12,48 @@ type Card = {
   example_th: string;
 };
 
+type QuizMode = "jp-to-meaning" | "meaning-to-jp";
+
 let originalDeck: Card[] = [];
-let deck: Card[] = [];
-let guessedCards: Card[] = [];
 let current: Card | null = null;
+
+let quizMode: QuizMode = "jp-to-meaning";
+
+let decks: Record<QuizMode, Card[]> = {
+  "jp-to-meaning": [],
+  "meaning-to-jp": [],
+};
+
+let guessedByMode: Record<QuizMode, Card[]> = {
+  "jp-to-meaning": [],
+  "meaning-to-jp": [],
+};
 
 const question = document.getElementById("question")!;
 const answer = document.getElementById("answer")!;
 const guessedCount = document.getElementById("guessedCount")!;
 const guessedList = document.getElementById("guessedList")!;
 const remainCount = document.getElementById("remainCount")!;
+const historyToggleBtn = document.getElementById("historyToggleBtn") as HTMLButtonElement;
+// const historyContent = document.getElementById("historyContent")!;
+const historyPanel = document.getElementById("historyPanel")!;
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`);
 }
 
+function getDeck() {
+  return decks[quizMode];
+}
+
+function getGuessedCards() {
+  return guessedByMode[quizMode];
+}
+
 function updateStats() {
+  const deck = getDeck();
+  const guessedCards = getGuessedCards();
+
   guessedCount.textContent = String(guessedCards.length);
   remainCount.textContent = String(deck.length);
 
@@ -51,22 +78,37 @@ function updateStats() {
 }
 
 function pick() {
+  const deck = getDeck();
+
   updateStats();
 
   if (deck.length === 0) {
     current = null;
+    question.className = "card";
     question.textContent = "🎉 Done!";
     answer.innerHTML = `
       <div class="done-box">
-        เก่งมาก! ทายครบทั้งหมดแล้ว 🎊
+        เก่งมาก! ทายครบโหมดนี้แล้ว 🎊
       </div>
     `;
     return;
   }
 
   current = deck[Math.floor(Math.random() * deck.length)];
-  question.textContent = current.kanji;
   answer.innerHTML = "";
+
+  if (quizMode === "jp-to-meaning") {
+    question.className = "card jp-question";
+    question.textContent = current.kanji;
+  } else {
+    question.className = "card meaning-question";
+    question.innerHTML = `
+      <div class="meaning-question-content">
+        <div class="th-question">${current.th}</div>
+        <div class="en-question">${current.en}</div>
+      </div>
+    `;
+  }
 }
 
 async function load() {
@@ -74,8 +116,15 @@ async function load() {
     const res = await fetch(`${import.meta.env.BASE_URL}vocab.json`);
     originalDeck = await res.json();
 
-    deck = [...originalDeck];
-    guessedCards = [];
+    decks = {
+      "jp-to-meaning": [...originalDeck],
+      "meaning-to-jp": [...originalDeck],
+    };
+
+    guessedByMode = {
+      "jp-to-meaning": [],
+      "meaning-to-jp": [],
+    };
 
     pick();
   } catch (e) {
@@ -86,16 +135,43 @@ async function load() {
 function showAnswer() {
   if (!current) return;
 
+  if (quizMode === "jp-to-meaning") {
+    answer.innerHTML = `
+      <div class="answer-card">
+        <div class="answer-section">
+          <span class="pill blue">EN</span>
+          <div class="en">${current.en}</div>
+        </div>
+
+        <div class="answer-section">
+          <span class="pill green">TH</span>
+          <div class="th">${current.th}</div>
+        </div>
+
+        <div class="example-box">
+          <div class="example-title">ตัวอย่างประโยค</div>
+          <div class="jp">${current.example_kanji}</div>
+          <div class="kana">${current.example_kana}</div>
+          <div class="en">${current.example_en}</div>
+          <div class="th">${current.example_th}</div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
   answer.innerHTML = `
     <div class="answer-card">
       <div class="answer-section">
-        <span class="pill blue">EN</span>
-        <div class="en">${current.en}</div>
+        <span class="pill blue">JP</span>
+        <div class="jp">${current.kanji}</div>
+        <div class="kana">${current.reading}</div>
       </div>
 
       <div class="answer-section">
-        <span class="pill green">TH</span>
+        <span class="pill green">TH / EN</span>
         <div class="th">${current.th}</div>
+        <div class="en">${current.en}</div>
       </div>
 
       <div class="example-box">
@@ -112,8 +188,8 @@ function showAnswer() {
 function nextCard() {
   if (!current) return;
 
-  guessedCards.push(current);
-  deck = deck.filter((c) => c.id !== current!.id);
+  guessedByMode[quizMode].push(current);
+  decks[quizMode] = decks[quizMode].filter((c) => c.id !== current!.id);
 
   pick();
 }
@@ -123,8 +199,9 @@ function skipCard() {
 }
 
 function restart() {
-  deck = [...originalDeck];
-  guessedCards = [];
+  decks[quizMode] = [...originalDeck];
+  guessedByMode[quizMode] = [];
+  answer.innerHTML = "";
   pick();
 }
 
@@ -132,5 +209,23 @@ function restart() {
 (document.getElementById("nextBtn") as HTMLButtonElement).onclick = nextCard;
 (document.getElementById("skipBtn") as HTMLButtonElement).onclick = skipCard;
 (document.getElementById("restartBtn") as HTMLButtonElement).onclick = restart;
+
+document.querySelectorAll<HTMLInputElement>('input[name="mode"]').forEach((radio) => {
+  radio.addEventListener("change", () => {
+    quizMode = radio.value as QuizMode;
+    answer.innerHTML = "";
+    pick();
+  });
+});
+
+historyToggleBtn.onclick = () => {
+  historyPanel.classList.toggle("hidden");
+
+  const isHidden = historyPanel.classList.contains("hidden");
+
+  historyToggleBtn.textContent = isHidden
+    ? "✅ ดูคำที่ทายไปแล้ว"
+    : "🙈 ซ่อนคำที่ทายไปแล้ว";
+};
 
 load();

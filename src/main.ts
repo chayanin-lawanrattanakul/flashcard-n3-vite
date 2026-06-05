@@ -17,12 +17,6 @@ let current: Card | null = null;
 const question = document.getElementById("question")!;
 const answer = document.getElementById("answer")!;
 
-async function load() {
-  const res = await fetch("/vocab.json");
-  deck = await res.json();
-  pick();
-}
-
 function pick() {
   if (deck.length === 0) {
     question.textContent = "🎉 Done!";
@@ -34,6 +28,16 @@ function pick() {
 
   question.textContent = current.kanji;
   answer.innerHTML = "";
+}
+
+async function load() {
+  try {
+    const res = await fetch(`${import.meta.env.BASE_URL}vocab.json`);
+    deck = await res.json();
+    pick();
+  } catch (e) {
+    console.error("โหลด vocab.json ไม่ได้", e);
+  }
 }
 
 function showAnswer() {

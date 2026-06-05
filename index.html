@@ -26,6 +26,11 @@
           <input type="radio" name="mode" value="meaning-to-jp" />
           TH/EN → JP
         </label>
+
+        <label>
+          <input type="radio" name="mode" value="reading-to-jp" />
+          Hiragana → JP
+        </label>
       </div>
 
       <div class="card" id="question">Loading...</div>
@@ -47,11 +52,11 @@
     </section>
 
     <aside class="history-panel hidden" id="historyPanel">
-  <div class="history-content" id="historyContent">
-    <h3>✅ คำที่ทายไปแล้ว</h3>
-    <div id="guessedList"></div>
-  </div>
-</aside>
+      <div class="history-content" id="historyContent">
+        <h3>✅ คำที่ทายไปแล้ว</h3>
+        <div id="guessedList"></div>
+      </div>
+    </aside>
   </main>
 
   <script type="module" src="/src/main.ts"></script>

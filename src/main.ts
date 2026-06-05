@@ -12,7 +12,7 @@ type Card = {
   example_th: string;
 };
 
-type QuizMode = "jp-to-meaning" | "meaning-to-jp";
+type QuizMode = "jp-to-meaning" | "meaning-to-jp" | "reading-to-jp";
 
 let originalDeck: Card[] = [];
 let current: Card | null = null;
@@ -22,11 +22,13 @@ let quizMode: QuizMode = "jp-to-meaning";
 let decks: Record<QuizMode, Card[]> = {
   "jp-to-meaning": [],
   "meaning-to-jp": [],
+  "reading-to-jp": [],
 };
 
 let guessedByMode: Record<QuizMode, Card[]> = {
   "jp-to-meaning": [],
   "meaning-to-jp": [],
+  "reading-to-jp": [],
 };
 
 const question = document.getElementById("question")!;
@@ -69,6 +71,7 @@ function updateStats() {
         <div class="guessed-number">${index + 1}</div>
         <div>
           <div class="guessed-kanji">${card.kanji}</div>
+          <div class="guessed-reading">${card.reading}</div>
           <div class="guessed-meaning">${card.th} / ${card.en}</div>
         </div>
       </div>
@@ -100,14 +103,17 @@ function pick() {
   if (quizMode === "jp-to-meaning") {
     question.className = "card jp-question";
     question.textContent = current.kanji;
-  } else {
+  } else if (quizMode === "meaning-to-jp") {
     question.className = "card meaning-question";
     question.innerHTML = `
-      <div class="meaning-question-content">
-        <div class="th-question">${current.th}</div>
-        <div class="en-question">${current.en}</div>
-      </div>
-    `;
+    <div class="meaning-question-content">
+      <div class="th-question">${current.th}</div>
+      <div class="en-question">${current.en}</div>
+    </div>
+  `;
+  } else {
+    question.className = "card reading-question";
+    question.textContent = current.reading;
   }
 }
 
@@ -119,11 +125,13 @@ async function load() {
     decks = {
       "jp-to-meaning": [...originalDeck],
       "meaning-to-jp": [...originalDeck],
+      "reading-to-jp": [...originalDeck],
     };
 
     guessedByMode = {
       "jp-to-meaning": [],
       "meaning-to-jp": [],
+      "reading-to-jp": [],
     };
 
     pick();
@@ -163,6 +171,37 @@ function showAnswer() {
         </div>
       </div>
     `;
+    return;
+  }
+
+  if (quizMode === "reading-to-jp") {
+    answer.innerHTML = `
+    <div class="answer-card">
+      <div class="answer-section">
+        <span class="pill blue">JP</span>
+        <div class="jp">${current.kanji}</div>
+      </div>
+
+      <div class="answer-section">
+        <span class="pill pink">READING</span>
+        <div class="reading">${current.reading}</div>
+      </div>
+
+      <div class="answer-section">
+        <span class="pill green">TH / EN</span>
+        <div class="th">${current.th}</div>
+        <div class="en">${current.en}</div>
+      </div>
+
+      <div class="example-box">
+        <div class="example-title">ตัวอย่างประโยค</div>
+        <div class="jp">${current.example_kanji}</div>
+        <div class="kana">${current.example_kana}</div>
+        <div class="en">${current.example_en}</div>
+        <div class="th">${current.example_th}</div>
+      </div>
+    </div>
+  `;
     return;
   }
 

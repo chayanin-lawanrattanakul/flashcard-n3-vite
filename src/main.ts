@@ -17,6 +17,12 @@ let current: Card | null = null;
 const question = document.getElementById("question")!;
 const answer = document.getElementById("answer")!;
 
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register(
+    `${import.meta.env.BASE_URL}sw.js`
+  );
+}
+
 function pick() {
   if (deck.length === 0) {
     question.textContent = "🎉 Done!";

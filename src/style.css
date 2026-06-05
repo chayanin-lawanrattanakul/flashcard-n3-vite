@@ -455,3 +455,16 @@ button:active {
 .hidden {
   display: none !important;
 }
+
+.reading {
+  font-size: 28px;
+  font-weight: 700;
+  color: #e91e63;
+  text-align: center;
+  letter-spacing: 2px;
+}
+
+.pill.pink {
+  background: #fce4ec;
+  color: #e91e63;
+}

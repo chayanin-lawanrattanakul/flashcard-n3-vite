@@ -138,6 +138,12 @@ function showAnswer() {
   if (quizMode === "jp-to-meaning") {
     answer.innerHTML = `
       <div class="answer-card">
+
+      <div class="answer-section">
+        <span class="pill pink">READING</span>
+        <div class="reading">${current.reading}</div>
+      </div>
+      
         <div class="answer-section">
           <span class="pill blue">EN</span>
           <div class="en">${current.en}</div>

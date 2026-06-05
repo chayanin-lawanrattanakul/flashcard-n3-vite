@@ -17,6 +17,12 @@
       </div>
     `)}async function g(){try{e=await(await fetch(`/flashcard-n3-vite/vocab.json`)).json(),r={"jp-to-meaning":[...e],"meaning-to-jp":[...e]},i={"jp-to-meaning":[],"meaning-to-jp":[]},h()}catch(e){console.error(`โหลด vocab.json ไม่ได้`,e)}}function _(){if(t){if(n===`jp-to-meaning`){o.innerHTML=`
       <div class="answer-card">
+
+      <div class="answer-section">
+        <span class="pill pink">READING</span>
+        <div class="reading">${t.reading}</div>
+      </div>
+      
         <div class="answer-section">
           <span class="pill blue">EN</span>
           <div class="en">${t.en}</div>

@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8" />
   <title>Flashcards N3</title>
-  <script type="module" crossorigin src="/flashcard-n3-vite/assets/index-BVYma4-U.js"></script>
-  <link rel="stylesheet" crossorigin href="/flashcard-n3-vite/assets/index--DXYPpAM.css">
+  <script type="module" crossorigin src="/flashcard-n3-vite/assets/index-D8t3K1ao.js"></script>
+  <link rel="stylesheet" crossorigin href="/flashcard-n3-vite/assets/index-Dya43IaU.css">
 </head>
 
 <body>
@@ -56,9 +56,32 @@
         <button class="next" id="nextBtn">ทายแล้ว</button>
         <button class="skip" id="skipBtn">Skip</button>
         <button class="restart" id="restartBtn">Restart</button>
-        <button class="history-toggle" id="historyToggleBtn">
-          ✅ ดูคำที่ทายไปแล้ว
-        </button>
+        <div class="controls">
+
+
+  <!-- mode selector -->
+  <div class="controls__row controls__row--select">
+    <label class="select-label">โหมดการฝึก</label>
+    <select id="exerciseMode" class="select">
+      <option value="jp-to-meaning">ญี่ปุ่น → ให้ทายความหมาย</option>
+      <option value="reading-to-jp">ฮิรางานะ → ให้ทายคำญี่ปุ่น</option>
+      <option value="meaning-to-jp">ไทย/อังกฤษ → ให้ทายคำญี่ปุ่น</option>
+      <option value="mixed">ผสมทั้งหมด</option>
+    </select>
+  </div>
+
+  <!-- secondary actions -->
+  <div class="controls__row controls__row--secondary">
+    <button class="btn btn-download" id="downloadExerciseBtn">
+      📄 ดาวน์โหลดแบบฝึกหัดทั้งหมด
+    </button>
+
+    <button class="btn btn-history" id="historyToggleBtn">
+      ✅ ดูคำที่ทายไปแล้ว
+    </button>
+  </div>
+
+</div>
 
 
       </div>

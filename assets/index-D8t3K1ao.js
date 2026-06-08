@@ -105,4 +105,61 @@
         <div class="th">${n.example_th}</div>
       </div>
     </div>
-  `}function C(){if(c){if(e===`vocab`){let e=c;s[t].push(e),i[t]=i[t].filter(t=>t.id!==e.id)}else{let e=c;o[t].push(e),a[t]=a[t].filter(t=>t.id!==e.id)}b()}}function w(){b()}function T(){e===`vocab`?(i[t]=[...n],s[t]=[]):(a[t]=[...r],o[t]=[]),u.innerHTML=``,b()}document.getElementById(`showBtn`).onclick=S,document.getElementById(`nextBtn`).onclick=C,document.getElementById(`skipBtn`).onclick=w,document.getElementById(`restartBtn`).onclick=T,document.querySelectorAll(`input[name="mode"]`).forEach(e=>{e.addEventListener(`change`,()=>{t=e.value,u.innerHTML=``,b()})}),document.querySelectorAll(`input[name="category"]`).forEach(t=>{t.addEventListener(`change`,()=>{e=t.value,u.innerHTML=``,b()})}),m.onclick=()=>{h.classList.toggle(`hidden`),m.textContent=h.classList.contains(`hidden`)?`✅ ดูข้อที่ทายไปแล้ว`:`🙈 ซ่อนข้อที่ทายไปแล้ว`},x();
+  `}function C(){if(c){if(e===`vocab`){let e=c;s[t].push(e),i[t]=i[t].filter(t=>t.id!==e.id)}else{let e=c;o[t].push(e),a[t]=a[t].filter(t=>t.id!==e.id)}b()}}function w(){b()}function T(){e===`vocab`?(i[t]=[...n],s[t]=[]):(a[t]=[...r],o[t]=[]),u.innerHTML=``,b()}function E(e){return[...e].sort(()=>Math.random()-.5)}function D(e,t){let n=t===`mixed`?[`jp-to-meaning`,`reading-to-jp`,`meaning-to-jp`][Math.floor(Math.random()*3)]:t;return g(e)?n===`jp-to-meaning`?e.kanji:n===`reading-to-jp`?e.reading:`${e.th} / ${e.en}`:n===`jp-to-meaning`?e.example_kanji:n===`reading-to-jp`?e.example_kana:`${e.example_th} / ${e.example_en}`}function O(e){return g(e)?`
+      ${e.kanji}<br/>
+      อ่านว่า: ${e.reading}<br/>
+      ความหมาย: ${e.th} / ${e.en}<br/>
+      ตัวอย่าง: ${e.example_kanji}<br/>
+      ${e.example_kana}<br/>
+      ${e.example_th} / ${e.example_en}
+    `:`
+    ${e.grammar}<br/>
+    โครงสร้าง: ${e.structure}<br/>
+    ความหมาย: ${e.meaning_th} / ${e.meaning_en}<br/>
+    ตัวอย่าง: ${e.example_kanji}<br/>
+    ${e.example_kana}<br/>
+    ${e.example_th} / ${e.example_en}
+  `}function k(){let t=document.getElementById(`exerciseMode`).value,i=E(e===`vocab`?n:r),a=`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8" />
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 32px;
+            line-height: 1.7;
+          }
+          h1, h2 {
+            text-align: center;
+          }
+          p {
+            margin-bottom: 18px;
+          }
+          .page-break {
+            page-break-before: always;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>แบบฝึกหัด N3</h1>
+        <h2>แบบฝึกหัด</h2>
+        ${i.map((e,n)=>`
+        <p>
+          ${n+1}. คำศัพท์ที่ให้ทายคำที่ ${n+1}: 
+          ${D(e,t)}
+          ........................................
+        </p>
+      `).join(``)}
+
+        <div class="page-break"></div>
+
+        <h1>เฉลย</h1>
+        ${i.map((e,t)=>`
+        <p>
+          ${t+1}. ${O(e)}
+        </p>
+      `).join(``)}
+      </body>
+    </html>
+  `,o=new Blob([a],{type:`application/msword;charset=utf-8`}),s=URL.createObjectURL(o),c=document.createElement(`a`);c.href=s,c.download=`N3-exercise.doc`,c.click(),URL.revokeObjectURL(s)}document.getElementById(`showBtn`).onclick=S,document.getElementById(`nextBtn`).onclick=C,document.getElementById(`skipBtn`).onclick=w,document.getElementById(`restartBtn`).onclick=T,document.getElementById(`downloadExerciseBtn`).onclick=k,document.querySelectorAll(`input[name="mode"]`).forEach(e=>{e.addEventListener(`change`,()=>{t=e.value,u.innerHTML=``,b()})}),document.querySelectorAll(`input[name="category"]`).forEach(t=>{t.addEventListener(`change`,()=>{e=t.value,u.innerHTML=``,b()})}),m.onclick=()=>{h.classList.toggle(`hidden`),m.textContent=h.classList.contains(`hidden`)?`✅ ดูข้อที่ทายไปแล้ว`:`🙈 ซ่อนข้อที่ทายไปแล้ว`},x();

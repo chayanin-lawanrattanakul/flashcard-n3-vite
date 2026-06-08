@@ -26,6 +26,7 @@ type GrammarCard = {
 
 type Category = "vocab" | "grammar";
 type QuizMode = "jp-to-meaning" | "meaning-to-jp" | "reading-to-jp";
+type ExerciseMode = QuizMode | "mixed";
 
 let category: Category = "vocab";
 let quizMode: QuizMode = "jp-to-meaning";
@@ -85,6 +86,8 @@ function getGuessedCards() {
     ? guessedVocabByMode[quizMode]
     : guessedGrammarByMode[quizMode];
 }
+
+
 
 function updateStats() {
   const deck = getDeck();
@@ -340,10 +343,141 @@ function restart() {
   pick();
 }
 
+function shuffleCards<T>(cards: T[]): T[] {
+  return [...cards].sort(() => Math.random() - 0.5);
+}
+
+function getExerciseQuestion(
+  card: VocabCard | GrammarCard,
+  mode: ExerciseMode
+) {
+  const realMode: QuizMode =
+    mode === "mixed"
+      ? (["jp-to-meaning", "reading-to-jp", "meaning-to-jp"][
+          Math.floor(Math.random() * 3)
+        ] as QuizMode)
+      : mode;
+
+  if (isVocab(card)) {
+    if (realMode === "jp-to-meaning") return card.kanji;
+    if (realMode === "reading-to-jp") return card.reading;
+    return `${card.th} / ${card.en}`;
+  }
+
+  if (realMode === "jp-to-meaning") return card.example_kanji;
+  if (realMode === "reading-to-jp") return card.example_kana;
+  return `${card.example_th} / ${card.example_en}`;
+}
+
+function getExerciseAnswer(card: VocabCard | GrammarCard) {
+  if (isVocab(card)) {
+    return `
+      ${card.kanji}<br/>
+      อ่านว่า: ${card.reading}<br/>
+      ความหมาย: ${card.th} / ${card.en}<br/>
+      ตัวอย่าง: ${card.example_kanji}<br/>
+      ${card.example_kana}<br/>
+      ${card.example_th} / ${card.example_en}
+    `;
+  }
+
+  return `
+    ${card.grammar}<br/>
+    โครงสร้าง: ${card.structure}<br/>
+    ความหมาย: ${card.meaning_th} / ${card.meaning_en}<br/>
+    ตัวอย่าง: ${card.example_kanji}<br/>
+    ${card.example_kana}<br/>
+    ${card.example_th} / ${card.example_en}
+  `;
+}
+
+function downloadExerciseDocument() {
+  const exerciseMode = (
+    document.getElementById("exerciseMode") as HTMLSelectElement
+  ).value as ExerciseMode;
+
+  const cards =
+    category === "vocab"
+      ? shuffleCards(originalVocabDeck)
+      : shuffleCards(originalGrammarDeck);
+
+  const questions = cards
+    .map((card, index) => {
+      return `
+        <p>
+          ${index + 1}. คำศัพท์ที่ให้ทายคำที่ ${index + 1}: 
+          ${getExerciseQuestion(card, exerciseMode)}
+          ........................................
+        </p>
+      `;
+    })
+    .join("");
+
+  const answers = cards
+    .map((card, index) => {
+      return `
+        <p>
+          ${index + 1}. ${getExerciseAnswer(card)}
+        </p>
+      `;
+    })
+    .join("");
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8" />
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 32px;
+            line-height: 1.7;
+          }
+          h1, h2 {
+            text-align: center;
+          }
+          p {
+            margin-bottom: 18px;
+          }
+          .page-break {
+            page-break-before: always;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>แบบฝึกหัด N3</h1>
+        <h2>แบบฝึกหัด</h2>
+        ${questions}
+
+        <div class="page-break"></div>
+
+        <h1>เฉลย</h1>
+        ${answers}
+      </body>
+    </html>
+  `;
+
+  const blob = new Blob([html], {
+    type: "application/msword;charset=utf-8",
+  });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download = "N3-exercise.doc";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
 (document.getElementById("showBtn") as HTMLButtonElement).onclick = showAnswer;
 (document.getElementById("nextBtn") as HTMLButtonElement).onclick = nextCard;
 (document.getElementById("skipBtn") as HTMLButtonElement).onclick = skipCard;
 (document.getElementById("restartBtn") as HTMLButtonElement).onclick = restart;
+(document.getElementById("downloadExerciseBtn") as HTMLButtonElement).onclick =
+  downloadExerciseDocument;
 
 document.querySelectorAll<HTMLInputElement>('input[name="mode"]').forEach((radio) => {
   radio.addEventListener("change", () => {

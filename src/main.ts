@@ -1,6 +1,6 @@
 import "./style.css";
 
-type Card = {
+type VocabCard = {
   id: number;
   kanji: string;
   reading: string;
@@ -12,24 +12,53 @@ type Card = {
   example_th: string;
 };
 
+type GrammarCard = {
+  id: number;
+  grammar: string;
+  meaning_en: string;
+  meaning_th: string;
+  structure: string;
+  example_kanji: string;
+  example_kana: string;
+  example_en: string;
+  example_th: string;
+};
+
+type Category = "vocab" | "grammar";
 type QuizMode = "jp-to-meaning" | "meaning-to-jp" | "reading-to-jp";
 
-let originalDeck: Card[] = [];
-let current: Card | null = null;
-
+let category: Category = "vocab";
 let quizMode: QuizMode = "jp-to-meaning";
 
-let decks: Record<QuizMode, Card[]> = {
+let originalVocabDeck: VocabCard[] = [];
+let originalGrammarDeck: GrammarCard[] = [];
+
+let vocabDecks: Record<QuizMode, VocabCard[]> = {
   "jp-to-meaning": [],
   "meaning-to-jp": [],
   "reading-to-jp": [],
 };
 
-let guessedByMode: Record<QuizMode, Card[]> = {
+let grammarDecks: Record<QuizMode, GrammarCard[]> = {
   "jp-to-meaning": [],
   "meaning-to-jp": [],
   "reading-to-jp": [],
 };
+
+let guessedGrammarByMode: Record<QuizMode, GrammarCard[]> = {
+  "jp-to-meaning": [],
+  "meaning-to-jp": [],
+  "reading-to-jp": [],
+};
+
+let guessedVocabByMode: Record<QuizMode, VocabCard[]> = {
+  "jp-to-meaning": [],
+  "meaning-to-jp": [],
+  "reading-to-jp": [],
+};
+
+
+let current: VocabCard | GrammarCard | null = null;
 
 const question = document.getElementById("question")!;
 const answer = document.getElementById("answer")!;
@@ -37,19 +66,24 @@ const guessedCount = document.getElementById("guessedCount")!;
 const guessedList = document.getElementById("guessedList")!;
 const remainCount = document.getElementById("remainCount")!;
 const historyToggleBtn = document.getElementById("historyToggleBtn") as HTMLButtonElement;
-// const historyContent = document.getElementById("historyContent")!;
 const historyPanel = document.getElementById("historyPanel")!;
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`);
 }
 
+function isVocab(card: VocabCard | GrammarCard): card is VocabCard {
+  return "kanji" in card;
+}
+
 function getDeck() {
-  return decks[quizMode];
+  return category === "vocab" ? vocabDecks[quizMode] : grammarDecks[quizMode];
 }
 
 function getGuessedCards() {
-  return guessedByMode[quizMode];
+  return category === "vocab"
+    ? guessedVocabByMode[quizMode]
+    : guessedGrammarByMode[quizMode];
 }
 
 function updateStats() {
@@ -60,29 +94,41 @@ function updateStats() {
   remainCount.textContent = String(deck.length);
 
   if (guessedCards.length === 0) {
-    guessedList.innerHTML = `<div class="empty">ยังไม่มีคำที่ทายแล้ว</div>`;
+    guessedList.innerHTML = `<div class="empty">ยังไม่มีข้อที่ทายแล้ว</div>`;
     return;
   }
 
   guessedList.innerHTML = guessedCards
-    .map(
-      (card, index) => `
-      <div class="guessed-item">
-        <div class="guessed-number">${index + 1}</div>
-        <div>
-          <div class="guessed-kanji">${card.kanji}</div>
-          <div class="guessed-reading">${card.reading}</div>
-          <div class="guessed-meaning">${card.th} / ${card.en}</div>
+    .map((card, index) => {
+      if (isVocab(card)) {
+        return `
+          <div class="guessed-item">
+            <div class="guessed-number">${index + 1}</div>
+            <div>
+              <div class="guessed-kanji">${card.kanji}</div>
+              <div class="guessed-reading">${card.reading}</div>
+              <div class="guessed-meaning">${card.th} / ${card.en}</div>
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="guessed-item">
+          <div class="guessed-number">${index + 1}</div>
+          <div>
+            <div class="guessed-kanji">${card.grammar}</div>
+            <div class="guessed-reading">${card.structure}</div>
+            <div class="guessed-meaning">${card.meaning_th} / ${card.meaning_en}</div>
+          </div>
         </div>
-      </div>
-    `
-    )
+      `;
+    })
     .join("");
 }
 
 function pick() {
   const deck = getDeck();
-
   updateStats();
 
   if (deck.length === 0) {
@@ -91,7 +137,7 @@ function pick() {
     question.textContent = "🎉 Done!";
     answer.innerHTML = `
       <div class="done-box">
-        เก่งมาก! ทายครบโหมดนี้แล้ว 🎊
+        เก่งมาก! ทายครบหมวดนี้แล้ว 🎊
       </div>
     `;
     return;
@@ -100,108 +146,139 @@ function pick() {
   current = deck[Math.floor(Math.random() * deck.length)];
   answer.innerHTML = "";
 
+  if (category === "grammar") {
+    const card = current as GrammarCard;
+
+    if (quizMode === "jp-to-meaning") {
+      question.className = "card jp-question";
+      question.innerHTML = `
+      <div class="jp">${card.example_kanji}</div>
+    `;
+    } else if (quizMode === "meaning-to-jp") {
+      question.className = "card meaning-question";
+      question.innerHTML = `
+      <div class="meaning-question-content">
+        <div class="th-question">${card.example_th}</div>
+        <div class="en-question">${card.example_en}</div>
+      </div>
+    `;
+    } else {
+      question.className = "card reading-question";
+      question.innerHTML = `
+      <div class="reading">${card.example_kana}</div>
+    `;
+    }
+
+    return;
+  }
+
+  const card = current as VocabCard;
+
   if (quizMode === "jp-to-meaning") {
     question.className = "card jp-question";
-    question.textContent = current.kanji;
+    question.textContent = card.kanji;
   } else if (quizMode === "meaning-to-jp") {
     question.className = "card meaning-question";
     question.innerHTML = `
-    <div class="meaning-question-content">
-      <div class="th-question">${current.th}</div>
-      <div class="en-question">${current.en}</div>
-    </div>
-  `;
+      <div class="meaning-question-content">
+        <div class="th-question">${card.th}</div>
+        <div class="en-question">${card.en}</div>
+      </div>
+    `;
   } else {
     question.className = "card reading-question";
-    question.textContent = current.reading;
+    question.textContent = card.reading;
   }
 }
 
 async function load() {
   try {
-    const res = await fetch(`${import.meta.env.BASE_URL}vocab.json`);
-    originalDeck = await res.json();
+    const vocabRes = await fetch(`${import.meta.env.BASE_URL}vocab.json`);
+    const grammarRes = await fetch(`${import.meta.env.BASE_URL}grammar.json`);
 
-    decks = {
-      "jp-to-meaning": [...originalDeck],
-      "meaning-to-jp": [...originalDeck],
-      "reading-to-jp": [...originalDeck],
+    originalVocabDeck = await vocabRes.json();
+    originalGrammarDeck = await grammarRes.json();
+
+    vocabDecks = {
+      "jp-to-meaning": [...originalVocabDeck],
+      "meaning-to-jp": [...originalVocabDeck],
+      "reading-to-jp": [...originalVocabDeck],
     };
 
-    guessedByMode = {
-      "jp-to-meaning": [],
-      "meaning-to-jp": [],
-      "reading-to-jp": [],
+    grammarDecks = {
+      "jp-to-meaning": [...originalGrammarDeck],
+      "meaning-to-jp": [...originalGrammarDeck],
+      "reading-to-jp": [...originalGrammarDeck],
     };
 
     pick();
   } catch (e) {
-    console.error("โหลด vocab.json ไม่ได้", e);
+    console.error("โหลดไฟล์ json ไม่ได้", e);
   }
 }
 
 function showAnswer() {
   if (!current) return;
 
-  if (quizMode === "jp-to-meaning") {
-    answer.innerHTML = `
-      <div class="answer-card">
+ if (category === "grammar") {
+  const card = current as GrammarCard;
 
-      <div class="answer-section">
-        <span class="pill pink">READING</span>
-        <div class="reading">${current.reading}</div>
-      </div>
-      
-        <div class="answer-section">
-          <span class="pill blue">EN</span>
-          <div class="en">${current.en}</div>
-        </div>
-
-        <div class="answer-section">
-          <span class="pill green">TH</span>
-          <div class="th">${current.th}</div>
-        </div>
-
-        <div class="example-box">
-          <div class="example-title">ตัวอย่างประโยค</div>
-          <div class="jp">${current.example_kanji}</div>
-          <div class="kana">${current.example_kana}</div>
-          <div class="en">${current.example_en}</div>
-          <div class="th">${current.example_th}</div>
-        </div>
-      </div>
-    `;
-    return;
-  }
-
-  if (quizMode === "reading-to-jp") {
-    answer.innerHTML = `
+  answer.innerHTML = `
     <div class="answer-card">
       <div class="answer-section">
         <span class="pill blue">JP</span>
-        <div class="jp">${current.kanji}</div>
+        <div class="jp">${card.example_kanji}</div>
       </div>
 
       <div class="answer-section">
-        <span class="pill pink">READING</span>
-        <div class="reading">${current.reading}</div>
+        <span class="pill pink">HIRAGANA</span>
+        <div class="reading">${card.example_kana}</div>
       </div>
 
       <div class="answer-section">
         <span class="pill green">TH / EN</span>
-        <div class="th">${current.th}</div>
-        <div class="en">${current.en}</div>
+        <div class="th">${card.example_th}</div>
+        <div class="en">${card.example_en}</div>
       </div>
 
-      <div class="example-box">
-        <div class="example-title">ตัวอย่างประโยค</div>
-        <div class="jp">${current.example_kanji}</div>
-        <div class="kana">${current.example_kana}</div>
-        <div class="en">${current.example_en}</div>
-        <div class="th">${current.example_th}</div>
+      <div class="answer-section">
+        <span class="pill blue">GRAMMAR</span>
+        <div class="jp">${card.grammar}</div>
+        <div class="reading">${card.structure}</div>
       </div>
     </div>
   `;
+  return;
+}
+  const card = current as VocabCard;
+
+  if (quizMode === "jp-to-meaning") {
+    answer.innerHTML = `
+      <div class="answer-card">
+        <div class="answer-section">
+          <span class="pill pink">READING</span>
+          <div class="reading">${card.reading}</div>
+        </div>
+
+        <div class="answer-section">
+          <span class="pill blue">EN</span>
+          <div class="en">${card.en}</div>
+        </div>
+
+        <div class="answer-section">
+          <span class="pill green">TH</span>
+          <div class="th">${card.th}</div>
+        </div>
+
+        <div class="example-box">
+          <div class="example-title">ตัวอย่างประโยค</div>
+          <div class="jp">${card.example_kanji}</div>
+          <div class="kana">${card.example_kana}</div>
+          <div class="en">${card.example_en}</div>
+          <div class="th">${card.example_th}</div>
+        </div>
+      </div>
+    `;
     return;
   }
 
@@ -209,22 +286,22 @@ function showAnswer() {
     <div class="answer-card">
       <div class="answer-section">
         <span class="pill blue">JP</span>
-        <div class="jp">${current.kanji}</div>
-        <div class="kana">${current.reading}</div>
+        <div class="jp">${card.kanji}</div>
+        <div class="kana">${card.reading}</div>
       </div>
 
       <div class="answer-section">
         <span class="pill green">TH / EN</span>
-        <div class="th">${current.th}</div>
-        <div class="en">${current.en}</div>
+        <div class="th">${card.th}</div>
+        <div class="en">${card.en}</div>
       </div>
 
       <div class="example-box">
         <div class="example-title">ตัวอย่างประโยค</div>
-        <div class="jp">${current.example_kanji}</div>
-        <div class="kana">${current.example_kana}</div>
-        <div class="en">${current.example_en}</div>
-        <div class="th">${current.example_th}</div>
+        <div class="jp">${card.example_kanji}</div>
+        <div class="kana">${card.example_kana}</div>
+        <div class="en">${card.example_en}</div>
+        <div class="th">${card.example_th}</div>
       </div>
     </div>
   `;
@@ -233,8 +310,15 @@ function showAnswer() {
 function nextCard() {
   if (!current) return;
 
-  guessedByMode[quizMode].push(current);
-  decks[quizMode] = decks[quizMode].filter((c) => c.id !== current!.id);
+  if (category === "vocab") {
+    const card = current as VocabCard;
+    guessedVocabByMode[quizMode].push(card);
+    vocabDecks[quizMode] = vocabDecks[quizMode].filter((c) => c.id !== card.id);
+  } else {
+  const card = current as GrammarCard;
+  guessedGrammarByMode[quizMode].push(card);
+  grammarDecks[quizMode] = grammarDecks[quizMode].filter((c) => c.id !== card.id);
+}
 
   pick();
 }
@@ -244,8 +328,14 @@ function skipCard() {
 }
 
 function restart() {
-  decks[quizMode] = [...originalDeck];
-  guessedByMode[quizMode] = [];
+  if (category === "vocab") {
+    vocabDecks[quizMode] = [...originalVocabDeck];
+    guessedVocabByMode[quizMode] = [];
+  } else {
+  grammarDecks[quizMode] = [...originalGrammarDeck];
+  guessedGrammarByMode[quizMode] = [];
+}
+
   answer.innerHTML = "";
   pick();
 }
@@ -263,14 +353,22 @@ document.querySelectorAll<HTMLInputElement>('input[name="mode"]').forEach((radio
   });
 });
 
+document.querySelectorAll<HTMLInputElement>('input[name="category"]').forEach((radio) => {
+  radio.addEventListener("change", () => {
+    category = radio.value as Category;
+    answer.innerHTML = "";
+    pick();
+  });
+});
+
 historyToggleBtn.onclick = () => {
   historyPanel.classList.toggle("hidden");
 
   const isHidden = historyPanel.classList.contains("hidden");
 
   historyToggleBtn.textContent = isHidden
-    ? "✅ ดูคำที่ทายไปแล้ว"
-    : "🙈 ซ่อนคำที่ทายไปแล้ว";
+    ? "✅ ดูข้อที่ทายไปแล้ว"
+    : "🙈 ซ่อนข้อที่ทายไปแล้ว";
 };
 
 load();

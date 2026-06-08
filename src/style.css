@@ -468,3 +468,11 @@ button:active {
   background: #fce4ec;
   color: #e91e63;
 }
+
+.category-box {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}

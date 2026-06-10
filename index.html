@@ -1,101 +1,138 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Flashcards N3</title>
-  <script type="module" crossorigin src="/flashcard-n3-vite/assets/index-D8t3K1ao.js"></script>
-  <link rel="stylesheet" crossorigin href="/flashcard-n3-vite/assets/index-Dya43IaU.css">
+  <script type="module" crossorigin src="/flashcard-n3-vite/assets/index-B55bKFuw.js"></script>
+  <link rel="stylesheet" crossorigin href="/flashcard-n3-vite/assets/index-C7breDbH.css">
 </head>
 
 <body>
   <main class="app">
     <section class="main-panel">
-      <h2>📚 Flashcards N3</h2>
+      <header class="app-header">
+        <div>
+          <p class="eyebrow">JLPT N3</p>
+          <h2>📚 Flashcards</h2>
+        </div>
 
-      <div class="stats">
-        <div>เหลือ <b id="remainCount">0</b> คำ</div>
-        <div>ทายแล้ว <b id="guessedCount">0</b> คำ</div>
+        <div class="stats compact-stats">
+          <div><span>เหลือ</span><b id="remainCount">0</b></div>
+          <div><span>ทายแล้ว</span><b id="guessedCount">0</b></div>
+        </div>
+      </header>
+
+      <nav class="top-tabs" aria-label="Practice mode">
+        <button class="tab active" id="flashcardTabBtn" type="button">🃏 Flashcard</button>
+        <button class="tab" id="quizTabBtn" type="button">📝 Quiz</button>
+      </nav>
+
+      <div class="flashcard" id="flashcard">
+        <div class="flashcard-inner">
+          <div class="card flashcard-front" id="question">Loading...</div>
+          <div class="card flashcard-back" id="answer"></div>
+        </div>
       </div>
 
-      <div class="category-box">
-        <label>
-          <input type="radio" name="category" value="vocab" checked />
-          คำศัพท์
-        </label>
+      <section id="flashcardControls" class="panel-card">
+        <div class="primary-actions">
+          <button class="show primary" id="showBtn" type="button">Show</button>
+          <button class="next primary" id="nextBtn" type="button">ทายแล้ว</button>
+        </div>
 
-        <label>
-          <input type="radio" name="category" value="grammar" />
-          ไวยากรณ์
-        </label>
-      </div>
+        <div class="secondary-actions">
+          <button class="skip" id="skipBtn" type="button">Skip</button>
+          <button class="restart" id="restartBtn" type="button">Restart</button>
+          <button class="history-mini" id="historyToggleBtn" type="button">History</button>
+        </div>
 
-      <div class="mode-box">
-        <label>
-          <input type="radio" name="mode" value="jp-to-meaning" checked />
-          JP → TH/EN
-        </label>
+        <details class="settings-drawer">
+          <summary>⚙️ ตั้งค่า Flashcard</summary>
 
-        <label>
-          <input type="radio" name="mode" value="meaning-to-jp" />
-          TH/EN → JP
-        </label>
+          <div class="setting-group">
+            <p class="setting-title">หมวด</p>
+            <div class="segmented category-box">
+              <label>
+                <input type="radio" name="category" value="vocab" checked />
+                <span>คำศัพท์</span>
+              </label>
+              <label>
+                <input type="radio" name="category" value="grammar" />
+                <span>ไวยากรณ์</span>
+              </label>
+            </div>
+          </div>
 
-        <label>
-          <input type="radio" name="mode" value="reading-to-jp" />
-          Hiragana → JP
-        </label>
-      </div>
+          <div class="setting-group">
+            <p class="setting-title">รูปแบบคำถาม</p>
+            <div class="segmented mode-box stacked">
+              <label>
+                <input type="radio" name="mode" value="jp-to-meaning" checked />
+                <span>JP → TH/EN</span>
+              </label>
+              <label>
+                <input type="radio" name="mode" value="meaning-to-jp" />
+                <span>TH/EN → JP</span>
+              </label>
+              <label>
+                <input type="radio" name="mode" value="reading-to-jp" />
+                <span>Hiragana → JP</span>
+              </label>
+            </div>
+          </div>
+        </details>
+      </section>
 
-      <div class="card" id="question">Loading...</div>
+      <section id="quizControls" class="panel-card hidden">
+        <div class="quiz-start-box" id="quizStartBox">
+          <label class="select-label" for="quizMode">เลือกแบบ Quiz</label>
+          <select id="quizMode" class="select">
+            <option value="">กรุณาเลือก</option>
+            <option value="kanji-to-meaning-reading">คันจิ → เลือกคำอ่าน + ความหมาย</option>
+            <option value="reading-to-kanji-meaning">ฮิรางานะ → เลือกคันจิ + ความหมาย</option>
+            <option value="mixed">ผสมทั้งหมด</option>
+          </select>
+        </div>
 
-      <div id="answer"></div>
+        <div class="primary-actions quiz-actions">
+          <button class="answer-reveal primary hidden" id="quizAnswerBtn" type="button">📖 ดูเฉลย</button>
+          <button class="next primary" id="quizNextBtn" type="button">ข้อต่อไป</button>
+        </div>
 
-      <div class="buttons">
-        <button class="show" id="showBtn">Show</button>
-        <button class="next" id="nextBtn">ทายแล้ว</button>
-        <button class="skip" id="skipBtn">Skip</button>
-        <button class="restart" id="restartBtn">Restart</button>
-        <div class="controls">
+        <div class="secondary-actions quiz-secondary-actions">
+          <button class="restart" id="quizRestartBtn" type="button">เริ่มใหม่</button>
+          <button class="back-flashcard" id="backFlashcardBtn" type="button">กลับ Flashcard</button>
+          <button class="history-mini" id="quizHistoryToggleBtn" type="button">History</button>
+        </div>
+      </section>
 
+      <section class="history-panel hidden" id="historyPanel">
+        <div class="history-content" id="historyContent">
+          <h3>✅ ประวัติที่ทำแล้ว</h3>
+          <div id="guessedList"></div>
+        </div>
+      </section>
 
-  <!-- mode selector -->
-  <div class="controls__row controls__row--select">
-    <label class="select-label">โหมดการฝึก</label>
-    <select id="exerciseMode" class="select">
-      <option value="jp-to-meaning">ญี่ปุ่น → ให้ทายความหมาย</option>
-      <option value="reading-to-jp">ฮิรางานะ → ให้ทายคำญี่ปุ่น</option>
-      <option value="meaning-to-jp">ไทย/อังกฤษ → ให้ทายคำญี่ปุ่น</option>
-      <option value="mixed">ผสมทั้งหมด</option>
-    </select>
-  </div>
+      <details id="exerciseControls" class="panel-card utility-drawer">
+        <summary>📄 ดาวน์โหลด / อื่น ๆ</summary>
 
-  <!-- secondary actions -->
-  <div class="controls__row controls__row--secondary">
-    <button class="btn btn-download" id="downloadExerciseBtn">
-      📄 ดาวน์โหลดแบบฝึกหัดทั้งหมด
-    </button>
+        <div class="setting-group">
+          <label class="select-label" for="exerciseMode">โหมดแบบฝึกหัดเอกสาร</label>
+          <select id="exerciseMode" class="select">
+            <option value="jp-to-meaning">ญี่ปุ่น → ให้ทายความหมาย</option>
+            <option value="reading-to-jp">ฮิรางานะ → ให้ทายคำญี่ปุ่น</option>
+            <option value="meaning-to-jp">ไทย/อังกฤษ → ให้ทายคำญี่ปุ่น</option>
+            <option value="mixed">ผสมทั้งหมด</option>
+          </select>
+        </div>
 
-    <button class="btn btn-history" id="historyToggleBtn">
-      ✅ ดูคำที่ทายไปแล้ว
-    </button>
-  </div>
-
-</div>
-
-
-      </div>
-
+        <button class="btn btn-download full-width" id="downloadExerciseBtn" type="button">
+          📄 ดาวน์โหลดแบบฝึกหัดทั้งหมด
+        </button>
+      </details>
     </section>
-
-    <aside class="history-panel hidden" id="historyPanel">
-      <div class="history-content" id="historyContent">
-        <h3>✅ คำที่ทายไปแล้ว</h3>
-        <div id="guessedList"></div>
-      </div>
-    </aside>
   </main>
 
 </body>
-
 </html>

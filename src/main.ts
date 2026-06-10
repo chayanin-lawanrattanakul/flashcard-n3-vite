@@ -97,9 +97,9 @@ const exerciseControls = document.getElementById("exerciseControls")!;
 const flashcardTabBtn = document.getElementById("flashcardTabBtn") as HTMLButtonElement;
 const quizTabBtn = document.getElementById("quizTabBtn") as HTMLButtonElement;
 
-// if ("serviceWorker" in navigator) {
-//   navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`);
-// }
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`);
+}
 
 function isVocab(card: VocabCard | GrammarCard): card is VocabCard {
   return "kanji" in card;
